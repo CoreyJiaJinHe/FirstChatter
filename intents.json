@@ -54,6 +54,17 @@
           "What did the buffalo say when his son left for college? Bison."
         ]
       }
+      ,
+      {
+        "tag": "weather",
+        "patterns": [
+          "Current weather in a city",
+          "What is the weather?"
+        ],
+        "responses": [
+          ""
+        ]
+      }
     ]
   }
   

@@ -7,6 +7,9 @@ import os,random,json,torch
 from model import NeuralNet
 from nltk_utils import bag_of_words, tokenize
 
+
+
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 with open("intents.json") as json_data:
@@ -31,6 +34,7 @@ bot_name = "iris-NLP"
 def get_response(msg):
     sentence = tokenize(msg)
     X = bag_of_words(sentence, all_words)
+    words=X
     X = X.reshape(1, X.shape[0])
     X = torch.from_numpy(X).to(device)
 
@@ -44,10 +48,73 @@ def get_response(msg):
     if prob.item() > 0.75:
         for intent in intents['intents']:
             if tag == intent["tag"]:
-                return random.choice(intent['responses'])
+                if (tag=="weather"):
+                    print("The weather in where?")
+                    sentence = input("You: ")
+                    if sentence == "quit":
+                        break
+                    locationinput =tokenize(sentence)
+                    print (locationinput)
+                    locationexists=findcitycountry(sentence)
+                    if (locationexists=="N/A"):
+                        return "Something went wrong."
+                    else:
+                        city_weather = get_weather(locationexists)
+                        if city_weather is not None:
+                            return "In " + locationexists + ", the current weather is: " + city_weather
+                else:
+                    return random.choice(intent['responses'])
+            
     return "I do not understand..."
 
 
+
+import requests
+api_key="3cd8835d6e50c07a0acd5ca48b895595"
+
+def get_weather(city_name):
+    api_url = "http://api.openweathermap.org/data/2.5/weather?q={}&appid={}".format(city_name, api_key)
+    response = requests.get(api_url)
+    response_dict = response.json()
+
+    weather = response_dict["weather"][0]["description"]
+    
+    if response.status_code == 200:
+        return weather
+    else:
+        print('[!] HTTP {0} calling [{1}]'.format(response.status_code, api_url))
+        return None
+
+
+import geonamescache
+gc=geonamescache.GeonamesCache()
+
+
+def gen_dict_extract(var, key):
+    if isinstance(var, dict):
+        for k, v in var.items():
+            if k == key:
+                yield v
+            if isinstance(v, (dict, list)):
+                yield from gen_dict_extract(v, key)
+    elif isinstance(var, list):
+        for d in var:
+            yield from gen_dict_extract(d, key)
+
+def findcitycountry(input):
+    
+    countries=gc.get_countries()
+    cities=gc.get_cities()
+    cities = [*gen_dict_extract(cities, 'name')]
+    countries = [*gen_dict_extract(countries, 'name')]
+    if (isinstance(input,str)):
+        if (input.upper() in (city.upper() for city in cities) or input.upper() in (country.upper() for country in countries)):
+            return input
+    else:
+        for word in input:
+            if (input.upper() in (city.upper() for city in cities) or input.upper() in (country.upper() for country in countries)):
+                return input
+    return "N/A"
 
 
 
