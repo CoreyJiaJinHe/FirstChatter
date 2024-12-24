@@ -17,7 +17,7 @@ with open("intents.json") as json_data:
 
 data_dir = os.path.join(os.path.dirname(__file__))
 FILE = os.path.join(data_dir, 'chatdata.pth')
-data = torch.load(FILE)
+data = torch.load(FILE,weights_only=True)
 
 input_size = data["input_size"]
 hidden_size = data["hidden_size"]
@@ -70,7 +70,9 @@ def get_response(msg):
 
 
 import requests
-api_key="3cd8835d6e50c07a0acd5ca48b895595"
+import api
+api_key=api.api_key
+
 
 def get_weather(city_name):
     api_url = "http://api.openweathermap.org/data/2.5/weather?q={}&appid={}".format(city_name, api_key)
