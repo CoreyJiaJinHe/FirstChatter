@@ -2,12 +2,12 @@
 #Natural language processing. Run by using the button in top right.
 
 import requests
-api_key="3cd8835d6e50c07a0acd5ca48b895595"
+import api
 import spacy
 nlp = spacy.load("en_core_web_md")
 
 def get_weather(city_name):
-    api_url = "http://api.openweathermap.org/data/2.5/weather?q={}&appid={}".format(city_name, api_key)
+    api_url = "http://api.openweathermap.org/data/2.5/weather?q={}&appid={}".format(city_name, api.api_key)
     response = requests.get(api_url)
     response_dict = response.json()
 
